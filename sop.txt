@@ -1,0 +1,7 @@
+sudo docker rm medic-os
+sudo docker logs -f medic-os
+sudo docker volume ls
+sudo docker-compose down 
+sudo docker rm -f $(docker ps -a -q)
+sudo docker volume rm $(docker volume ls -q)
+suod docker-compose up -d
