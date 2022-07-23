@@ -23,6 +23,72 @@
     apt:
         name: curl
         state: present
+  - name: Free port 53
+    shell: sed -r -i.orig 's/#?DNSStubListener=yes/DNSStubListener=no/g' /etc/systemd/resolved.conf
+    shell: sh -c 'rm /etc/resolv.conf && ln -s /run/systemd/resolve/resolv.conf /etc/resolv.conf'
+    shell: systemctl restart systemd-resolved 
+    
+  - debug: var=ansible_enp0s3.ipv4.address  
+  - debug: var=ansible_all_ipv4_addresses
+  - debug: var=ansible_default_ipv4.address
+    
+  - name: Update the /etc/hosts file with dns.hmislocal.org name
+    tags: etchostsupdate
+    become: yes
+    become_user: root
+    lineinfile:
+        path: "/etc/hosts"
+        line: "{{ ansible_default_ipv4.address }}\tdns.hmislocal.org"
+        state: present
+        backup: yes
+    register: etchostsupdate
+    
+  - name: Update the /etc/hosts file with cht.hmislocal.org name
+    tags: etchostsupdate
+    become: yes
+    become_user: root
+    lineinfile:
+        path: "/etc/hosts"
+        line: "{{ ansible_default_ipv4.address }}\tcht.hmislocal.org"
+        state: present
+        backup: yes
+    register: etchostsupdate
+    
+  - name: Set DOCKER_COUCHDB_ADMIN_PASSWORD=cb6f4d4b-73cc-4c42-97cb-0db5a631190a
+    tags: etchostsupdate
+    become: yes
+    become_user: root
+    lineinfile:
+        path: "/etc/environment"
+        line: "DOCKER_COUCHDB_ADMIN_PASSWORD=cb6f4d4b-73cc-4c42-97cb-0db5a631190a"
+        state: present
+        backup: yes
+    register: etchostsupdate
+    
+  - name: Set COUCH_URL=http://medic:cb6f4d4b-73cc-4c42-97cb-0db5a631190a@localhost:5988/medic
+    tags: etchostsupdate
+    become: yes
+    become_user: root
+    lineinfile:
+        path: "/etc/environment"
+        line: "COUCH_URL=http://medic:cb6f4d4b-73cc-4c42-97cb-0db5a631190a@localhost:5988/medic"
+        state: present
+        backup: yes
+    register: etchostsupdate
+    
+  - name: Set COUCH_NODE_NAME=onode@nohost
+    tags: etchostsupdate
+    become: yes
+    become_user: root
+    lineinfile:
+        path: "/etc/environment"
+        line: "COUCH_NODE_NAME=onode@nohost"
+        state: present
+        backup: yes
+    register: etchostsupdate
+    
+  - name: Refresh /etc/enviomenyt Sources
+    shell: source /etc/environment
         
   - name: apt update
     apt:
@@ -102,30 +168,7 @@
         cmd: "docker-compose -f pi-hole-docker-compose.yml up --detach"
         chdir: /opt/afyastat/medic
         
-  - name: Set DOCKER_COUCHDB_ADMIN_PASSWORD
-    shell: "echo $DOCKER_COUCHDB_ADMIN_PASSWORD"
-    environment:
-        DOCKER_COUCHDB_ADMIN_PASSWORD: cb6f4d4b-73cc-4c42-97cb-0db5a631190a
-
-  - name: Echo DOCKER_COUCHDB_ADMIN_PASSWORD 
-    shell: "echo $DOCKER_COUCHDB_ADMIN_PASSWORD"
-    
-  - name: Set COUCH_URL
-    shell: "echo $COUCH_URL"
-    environment:
-        COUCH_URL: http://medic:cb6f4d4b-73cc-4c42-97cb-0db5a631190a@localhost:5988/medic
-
-  - name: Echo COUCH_URL
-    shell: "echo $COUCH_URL"  
-    
-  - name: Set COUCH_NODE_NAME
-    shell: "echo $COUCH_NODE_NAME"
-    environment:
-        COUCH_NODE_NAME: onode@nohost
-
-  - name: Echo COUCH_NODE_NAME
-    shell: "echo $COUCH_NODE_NAME" 
-    
+     
   - name: Installing Medic-OS
     become: true
     shell:
@@ -156,7 +199,7 @@
   - name: Uploading AfyaStat Forms
     shell: npm install -g medic-conf@3.6.0 
   
-  - name: Initalling pip AfyaStat Forms
+  - name: Installing pip AfyaStat Forms
     shell: apt-get install -y python3-pip  
     
     
