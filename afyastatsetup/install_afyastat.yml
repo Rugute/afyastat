@@ -16,6 +16,18 @@
   - name: Copy installation Package 
     shell: "cp -r medic /opt/afyastat"
     
+  - name: Create Folder etc/pihole
+    file: 
+       path: /etc/piholesss/
+       owner: root
+       group: root
+       mode: 0777 
+       recurse: yes
+       state: directory
+       
+  - name: Copy installation Package 
+    shell: "cp -r medic /opt/afyastat"
+    
   - name: Assign rights to directoty 
     shell: "chmod -R 0777 /opt/afyastat/medic"
        
@@ -235,6 +247,15 @@
         backup: yes
     register: etchostsupdate 
     
+  - name: Copy pihole to etc/pihole 
+    shell: "mv --force /opt/afyastat/medic/etc-pihole/ /etc/pihole"
+    
+    #Rename the directory from etc-pihle to etc
+    
+    
+  - name: Assign rights to directoty 
+    shell: "chmod -R 0777 /etc/pihole"
+    
     
     ######################################################################################## 
   - name: Installing Medic-OS
@@ -247,8 +268,8 @@
     ansible.builtin.pause:
      minutes: 1
     
-  - name: Copy nginx File to Medic-os Container, Relax it can take 60 seconds
-    shell: docker cp  /opt/afyastat/medic/nginx.conf medic-os:/srv/settings/medic-core/nginx/nginx.conf
+    #- name: Copy nginx File to Medic-os Container, Relax it can take 60 seconds
+    #shell: docker cp  /opt/afyastat/medic/nginx.conf medic-os:/srv/settings/medic-core/nginx/nginx.conf
            
   - name: Get all containers for restart
     command: docker ps -a 
@@ -274,7 +295,7 @@
     shell: apt-get install -y python3-pip  
     
     
-  - name: Preparing AfyaStat Forms
+  - name: Uploading AfyaStat Forms
     shell: python3 -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
     
   - name: Waiting for AfyaStat to Start. Please Wait !!!
@@ -286,25 +307,13 @@
     retries: 20
     delay: 30
 
-# Localhost Uploading of forms
-     #- name: Uploading AfyaStat Forms
-     # command: medic-conf --url=http://medic:cb6f4d4b-73cc-4c42-97cb-0db5a631190a@localhost:5988 upload-app-settings delete-all-forms upload-app-forms upload-contact-forms upload-resources upload-custom-translations --accept-self-signed-certs
-     #args:
-     #chdir: /opt/afyastat/medic/AfyaStatForms
-     
   - name: Uploading AfyaStat Forms
-    command: medic-conf --url=https://medic:cb6f4d4b-73cc-4c42-97cb-0db5a631190a@cht.hmislocal.org upload-app-settings delete-all-forms upload-app-forms upload-contact-forms upload-resources upload-custom-translations --accept-self-signed-certs
+    command: medic-conf --url=http://medic:cb6f4d4b-73cc-4c42-97cb-0db5a631190a@localhost:5988 upload-app-settings delete-all-forms upload-app-forms upload-contact-forms upload-resources upload-custom-translations --accept-self-signed-certs
     args:
      chdir: /opt/afyastat/medic/AfyaStatForms
-     
 
         
   - name: "Show Network Interfaces"
     command: hostname -I
-    #register: details
-    
-    #Edit customlist
-    #192.168.100.6 cht.hmislocal.org
-    #192.168.100.6 dns.hmislocal.org
         
   

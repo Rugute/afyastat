@@ -5,3 +5,12 @@ sudo docker-compose down
 sudo docker rm -f $(docker ps -a -q)
 sudo docker volume rm $(docker volume ls -q)
 suod docker-compose up -d
+
+sudo docker stop medic-os
+sudo docker rm medic-os
+sudo docker volume rm medic-data
+sudo docker stop haproxy
+sudo docker rm haproxy 
+
+sudo docker stop pihole
+sudo docker rm pihole
